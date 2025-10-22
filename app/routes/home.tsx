@@ -80,32 +80,26 @@ export default function Index() {
   }
 
   return (
-    <main className="flex flex-col h-screen max-w-4xl mx-auto bg-gray-900">
-      <header className="p-4 border-b border-gray-700">
-        <h1 className="text-2xl font-bold text-white">🧠 Ollama Chat</h1>
+    <main className="chat-container">
+      <header className="chat-header">
+        <h1 className="chat-title">🧠 Ollama Chat</h1>
       </header>
 
       {/* Chat messages area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="messages-container">
         {messages.map((msg, i) => (
           <div
             key={i}
-            className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+            className={`message-wrapper ${msg.role}`}
           >
-            <div
-              className={`max-w-3xl px-4 py-2 rounded-lg ${
-                msg.role === "user"
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-700 text-gray-100"
-              }`}
-            >
-              <div className="text-sm font-medium mb-1 opacity-70">
+            <div className={`message-bubble ${msg.role}`}>
+              <div className="message-header">
                 {msg.role === "user" ? "You" : "Assistant"}
                 {msg.isStreaming && (
-                  <span className="ml-2 animate-pulse">●</span>
+                  <span className="streaming-indicator">●</span>
                 )}
               </div>
-              <div className="whitespace-pre-wrap">{msg.content}</div>
+              <div className="message-content">{msg.content}</div>
             </div>
           </div>
         ))}
@@ -114,19 +108,19 @@ export default function Index() {
       </div>
 
       {/* Input area */}
-      <div className="p-4 border-t border-gray-700">
-        <form onSubmit={sendMessage} className="flex gap-2">
+      <div className="input-container">
+        <form onSubmit={sendMessage} className="input-form">
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Type your message..."
-            className="flex-1 border border-gray-600 p-3 rounded-lg text-white bg-gray-800 placeholder-gray-400 focus:outline-none focus:border-blue-500"
+            className="message-input"
             disabled={messages.some((m) => m.isStreaming)}
           />
           <button
             type="submit"
             disabled={!input.trim() || messages.some((m) => m.isStreaming)}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-700 transition-colors"
+            className="send-button"
           >
             Send
           </button>
