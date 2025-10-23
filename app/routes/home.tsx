@@ -102,20 +102,28 @@ export default function Index() {
     const currentInput = input;
     setInput("");
 
+    // Check if we should call API BEFORE processing input (when we're waiting for location)
+    const shouldCallAPI = conversationState === "waiting_for_location";
+
     // Process the input based on conversation state
     let assistantResponse = processUserInput(currentInput);
-    let shouldCallAPI = false;
     let apiPrompt = "";
 
-    // If we're ready to tell the story, prepare for API call
-    if (conversationState === "telling_story") {
-      shouldCallAPI = true;
-      apiPrompt = generateStory();
+    // If we should call API (user just provided location), prepare for story generation
+    if (shouldCallAPI) {
+      // Update story elements with the location that was just provided
+      const updatedElements = {
+        ...storyElements,
+        location: currentInput.trim(),
+      };
+
+      apiPrompt = `You are a creative storyteller. Create a short, engaging story that incorporates these three items: ${updatedElements.items.join(", ")}. The story should involve ${updatedElements.action} and take place in ${updatedElements.location}. Make the story vivid and entertaining while connecting all the elements in a meaningful way. Keep the story concise - aim for 3-4 short paragraphs with a clear beginning, middle, and end. Focus on the key moments and avoid lengthy descriptions.`;
+
       setIsGeneratingStory(true);
       setConversationState("story_complete");
-    }
 
-    if (shouldCallAPI) {
+      console.log("Calling API with prompt:", apiPrompt);
+
       // Add a streaming assistant message placeholder
       const streamingMessage: Message = {
         role: "assistant",
@@ -133,6 +141,10 @@ export default function Index() {
             context: "", // Start fresh for story generation
           }),
         });
+
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
 
         // Handle stream - update the last message in real-time
         const reader = res.body!.getReader();
